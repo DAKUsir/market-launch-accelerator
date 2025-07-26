@@ -48,11 +48,11 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              Sign In
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/auth">Sign In</Link>
             </Button>
-            <Button variant="hero" size="sm">
-              Get Started
+            <Button variant="hero" size="sm" asChild>
+              <Link to="/dashboard">Dashboard</Link>
             </Button>
           </div>
 
@@ -84,11 +84,11 @@ export function Header() {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4">
-                <Button variant="ghost" size="sm">
-                  Sign In
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/auth">Sign In</Link>
                 </Button>
-                <Button variant="hero" size="sm">
-                  Get Started
+                <Button variant="hero" size="sm" asChild>
+                  <Link to="/dashboard">Dashboard</Link>
                 </Button>
               </div>
             </div>
