@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaigns: {
+        Row: {
+          commission_rate: number
+          commission_type: string
+          created_at: string
+          description: string
+          end_date: string | null
+          id: string
+          product_images: string[] | null
+          sales_materials: Json | null
+          start_date: string | null
+          status: string
+          target_demographics: Json | null
+          target_regions: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          commission_rate?: number
+          commission_type?: string
+          created_at?: string
+          description: string
+          end_date?: string | null
+          id?: string
+          product_images?: string[] | null
+          sales_materials?: Json | null
+          start_date?: string | null
+          status?: string
+          target_demographics?: Json | null
+          target_regions?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          commission_rate?: number
+          commission_type?: string
+          created_at?: string
+          description?: string
+          end_date?: string | null
+          id?: string
+          product_images?: string[] | null
+          sales_materials?: Json | null
+          start_date?: string | null
+          status?: string
+          target_demographics?: Json | null
+          target_regions?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -58,6 +120,105 @@ export type Database = {
           user_type?: string
         }
         Relationships: []
+      }
+      sales: {
+        Row: {
+          amount: number
+          campaign_id: string
+          commission_amount: number
+          created_at: string
+          customer_details: Json | null
+          id: string
+          payout_date: string | null
+          payout_status: string
+          sale_date: string
+          seller_id: string
+        }
+        Insert: {
+          amount: number
+          campaign_id: string
+          commission_amount: number
+          created_at?: string
+          customer_details?: Json | null
+          id?: string
+          payout_date?: string | null
+          payout_status?: string
+          sale_date?: string
+          seller_id: string
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string
+          commission_amount?: number
+          created_at?: string
+          customer_details?: Json | null
+          id?: string
+          payout_date?: string | null
+          payout_status?: string
+          sale_date?: string
+          seller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_applications: {
+        Row: {
+          application_message: string | null
+          applied_at: string
+          campaign_id: string
+          id: string
+          reviewed_at: string | null
+          seller_id: string
+          status: string
+        }
+        Insert: {
+          application_message?: string | null
+          applied_at?: string
+          campaign_id: string
+          id?: string
+          reviewed_at?: string | null
+          seller_id: string
+          status?: string
+        }
+        Update: {
+          application_message?: string | null
+          applied_at?: string
+          campaign_id?: string
+          id?: string
+          reviewed_at?: string | null
+          seller_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_applications_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_applications_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
