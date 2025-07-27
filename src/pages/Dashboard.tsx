@@ -31,6 +31,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [stats, setStats] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -57,11 +59,73 @@ export default function Dashboard() {
         console.error('Error fetching profile:', error);
       } else {
         setProfile(data);
+        await fetchDashboardData(data);
       }
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setProfileLoading(false);
+    }
+  };
+
+  const fetchDashboardData = async (profileData: Profile) => {
+    const isStartup = profileData.user_type === 'startup';
+    
+    try {
+      if (isStartup) {
+        // Fetch startup stats
+        const [campaignsRes, applicationsRes, salesRes] = await Promise.all([
+          supabase.from('campaigns').select('*').eq('user_id', user!.id),
+          supabase.from('seller_applications').select('*, campaigns!inner(user_id)').eq('campaigns.user_id', user!.id),
+          supabase.from('sales').select('*, campaigns!inner(user_id)').eq('campaigns.user_id', user!.id)
+        ]);
+
+        const activeCampaigns = campaignsRes.data?.filter(c => c.status === 'active').length || 0;
+        const totalSellers = new Set(applicationsRes.data?.filter(a => a.status === 'approved').map(a => a.seller_id)).size;
+        const totalSales = salesRes.data?.reduce((sum, sale) => sum + parseFloat(sale.amount.toString()), 0) || 0;
+        const citiesCovered = new Set(applicationsRes.data?.map(a => a.seller_id)).size;
+
+        setStats([
+          { title: "Active Campaigns", value: activeCampaigns.toString(), icon: BarChart3, color: "text-blue-500" },
+          { title: "Partner Sellers", value: totalSellers.toString(), icon: Users, color: "text-green-500" },
+          { title: "Total Sales", value: `₹${(totalSales / 1000).toFixed(1)}K`, icon: DollarSign, color: "text-purple-500" },
+          { title: "Cities Covered", value: citiesCovered.toString(), icon: MapPin, color: "text-orange-500" },
+        ]);
+
+        setRecentActivity(applicationsRes.data?.slice(-4).map(app => ({
+          type: 'application',
+          message: 'New seller applied to campaign',
+          description: `Application for campaign`,
+          time: '2 hours ago'
+        })) || []);
+      } else {
+        // Fetch seller stats
+        const [applicationsRes, salesRes] = await Promise.all([
+          supabase.from('seller_applications').select('*, campaigns(*)').eq('seller_id', user!.id),
+          supabase.from('sales').select('*').eq('seller_id', user!.id)
+        ]);
+
+        const activeProducts = applicationsRes.data?.filter(a => a.status === 'approved').length || 0;
+        const totalEarnings = salesRes.data?.reduce((sum, sale) => sum + parseFloat(sale.commission_amount.toString()), 0) || 0;
+        const thisMonth = salesRes.data?.filter(sale => new Date(sale.sale_date).getMonth() === new Date().getMonth())
+          .reduce((sum, sale) => sum + parseFloat(sale.commission_amount.toString()), 0) || 0;
+
+        setStats([
+          { title: "Active Products", value: activeProducts.toString(), icon: BarChart3, color: "text-blue-500" },
+          { title: "Total Earnings", value: `₹${totalEarnings.toFixed(0)}`, icon: DollarSign, color: "text-green-500" },
+          { title: "This Month", value: `₹${thisMonth.toFixed(0)}`, icon: TrendingUp, color: "text-purple-500" },
+          { title: "Commission Rate", value: "18%", icon: BarChart3, color: "text-orange-500" },
+        ]);
+
+        setRecentActivity(salesRes.data?.slice(-4).map(sale => ({
+          type: 'sale',
+          message: 'Product sale completed',
+          description: `₹${sale.commission_amount} commission earned`,
+          time: '1 hour ago'
+        })) || []);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
     }
   };
 
@@ -80,18 +144,6 @@ export default function Dashboard() {
   }
 
   const isStartup = profile?.user_type === 'startup';
-
-  const stats = isStartup ? [
-    { title: "Active Campaigns", value: "3", icon: BarChart3, color: "text-blue-500" },
-    { title: "Partner Sellers", value: "127", icon: Users, color: "text-green-500" },
-    { title: "Total Sales", value: "₹2.4L", icon: DollarSign, color: "text-purple-500" },
-    { title: "Cities Covered", value: "12", icon: MapPin, color: "text-orange-500" },
-  ] : [
-    { title: "Active Products", value: "5", icon: BarChart3, color: "text-blue-500" },
-    { title: "Total Earnings", value: "₹45,230", icon: DollarSign, color: "text-green-500" },
-    { title: "This Month", value: "₹12,500", icon: TrendingUp, color: "text-purple-500" },
-    { title: "Commission Rate", value: "18%", icon: BarChart3, color: "text-orange-500" },
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -171,29 +223,33 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {[1, 2, 3, 4].map((item) => (
-                      <div key={item} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                    {recentActivity.length > 0 ? recentActivity.map((activity, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                         <div className="flex items-center space-x-4">
                           <div className="h-10 w-10 bg-gradient-primary rounded-lg flex items-center justify-center">
                             <TrendingUp className="h-5 w-5 text-primary-foreground" />
                           </div>
                           <div>
                             <p className="font-medium text-foreground">
-                              {isStartup ? 'New seller joined campaign' : 'Product sale completed'}
+                              {activity.message}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {isStartup ? 'Mumbai Kirana Store - Electronics Campaign' : 'Wellness Product - ₹2,500 commission'}
+                              {activity.description}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-medium text-foreground">
-                            {isStartup ? '+1 Partner' : '+₹450'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">2 hours ago</p>
+                          <p className="text-xs text-muted-foreground">{activity.time}</p>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">No recent activity</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {isStartup ? 'Create your first campaign to get started' : 'Apply to campaigns to start earning'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
