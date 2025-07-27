@@ -1,23 +1,45 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const navigation = [
     { name: "Home", href: "/" },
     { name: "How It Works", href: "/how-it-works" },
     { name: "Features", href: "/features" },
-    { name: "Pricing", href: "/pricing" },
+    { name: "Bazar", href: "/bazar" },
     { name: "Success Stories", href: "/success-stories" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+      navigate("/auth");
+    } catch (error) {
+      console.error("Sign-out error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -33,41 +55,52 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`text-sm font-medium transition-colors duration-200 ${
-                  isActive(item.href)
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {navigation.map((item) =>
+              item.name === "Bazar" ? (
+                <Button
+                  key={item.name}
+                  variant="ghost"
+                  asChild
+                  className={`text-sm font-medium transition-colors duration-200 ${
+                    isActive(item.href)
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-primary/5"
+                  }`}
+                >
+                  <Link to={item.href}>{item.name}</Link>
+                </Button>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`text-sm font-medium transition-colors duration-200 ${
+                    isActive(item.href)
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              )
+            )}
           </div>
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
-                <Button variant="outline" asChild>
-                  <Link to="/dashboard">Dashboard</Link>
+                <Link
+                  to="/dashboard"
+                  className="h-8 w-8 bg-gradient-primary rounded-full flex items-center justify-center"
+                >
+                  <span className="text-primary-foreground font-bold text-sm">
+                    {user.email?.charAt(0).toUpperCase()}
+                  </span>
+                </Link>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
                 </Button>
-                <div className="flex items-center space-x-2">
-                  <div className="h-8 w-8 bg-gradient-primary rounded-full flex items-center justify-center">
-                    <span className="text-primary-foreground font-bold text-sm">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => signOut()}
-                  >
-                    Sign Out
-                  </Button>
-                </div>
               </div>
             ) : (
               <>
@@ -101,6 +134,8 @@ export function Header() {
                   className={`text-sm font-medium transition-colors duration-200 ${
                     isActive(item.href)
                       ? "text-primary"
+                      : item.name === "Bazar"
+                      ? "text-primary font-bold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
@@ -111,20 +146,36 @@ export function Header() {
               <div className="flex flex-col space-y-2 pt-4">
                 {user ? (
                   <>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/dashboard">Dashboard</Link>
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => signOut()}>
+                    <Link
+                      to="/dashboard"
+                      className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link to="/auth">Sign In</Link>
+                      <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                        Sign In
+                      </Link>
                     </Button>
                     <Button variant="hero" size="sm" asChild>
-                      <Link to="/start-selling">Start Selling</Link>
+                      <Link to="/start-selling" onClick={() => setIsMenuOpen(false)}>
+                        Start Selling
+                      </Link>
                     </Button>
                   </>
                 )}

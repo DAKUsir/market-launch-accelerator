@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User, Building, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
 
   const { signUp, signIn } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +82,8 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
               variant: "destructive"
             });
           }
+        } else {
+          navigate('/dashboard'); // Redirect to dashboard on successful sign-in
         }
       }
     } catch (error) {

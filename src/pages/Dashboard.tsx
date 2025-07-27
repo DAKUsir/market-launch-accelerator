@@ -9,7 +9,8 @@ import {
   Bell,
   Plus,
   Filter,
-  Download
+  Download,
+  LogOut // Added LogOut icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,20 @@ export default function Dashboard() {
   const [profileLoading, setProfileLoading] = useState(true);
   const [stats, setStats] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+
+  // Handle sign-out
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      } else {
+        navigate('/auth');
+      }
+    } catch (error) {
+      console.error('Sign-out error:', error);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -173,6 +188,10 @@ export default function Dashboard() {
               <Button variant="hero" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
                 {isStartup ? 'New Campaign' : 'Browse Products'}
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
             </div>
           </div>
