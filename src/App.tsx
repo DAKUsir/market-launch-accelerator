@@ -10,6 +10,9 @@ import StartSelling from "./pages/StartSelling";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Bazar from "./pages/Bazar";
+import ListProduct from "./pages/ListProduct";
+import FindSellers from "./pages/FindSellers";
+import MatchOnboard from "./pages/MatchOnboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +31,9 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/bazar" element={<Bazar />} />
+            <Route path="/list-product" element={<ListProduct />} />
+            <Route path="/find-sellers" element={<FindSellers />} />
+            <Route path="/match-onboard" element={<MatchOnboard />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

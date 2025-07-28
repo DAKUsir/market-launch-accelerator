@@ -143,124 +143,37 @@ export default function Bazar() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Browse products to sell or list your own to reach thousands of sellers across India.
+              Your complete marketplace for product distribution. List products, find sellers, and manage campaigns.
             </p>
-            {user && (
-              <Button 
-                variant="hero" 
-                size="lg" 
-                onClick={() => setShowForm(!showForm)}
-                className="animate-fade-in-scale"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {showForm ? "Cancel" : "List a Product"}
-              </Button>
-            )}
-            {!user && (
-              <Button 
-                variant="hero" 
-                size="lg" 
-                onClick={() => navigate("/auth")}
-                className="animate-fade-in-scale"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Sign In to List Products
-              </Button>
-            )}
-          </section>
-
-          {/* Product Listing Form */}
-          {user && showForm && (
-            <section className="py-8 animate-fade-in-scale">
-              <Card className="max-w-2xl mx-auto shadow-elegant">
-                <CardHeader>
-                  <CardTitle>List Your Product</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Product Name</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Enter product name"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        placeholder="Describe your product"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="image_url">Image URL</Label>
-                      <Input
-                        id="image_url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                        placeholder="Enter image URL"
-                        type="url"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="commission_rate">Commission Rate (%)</Label>
-                      <Input
-                        id="commission_rate"
-                        value={formData.commission_rate}
-                        onChange={(e) => setFormData({ ...formData, commission_rate: e.target.value })}
-                        placeholder="e.g., 15"
-                        type="number"
-                        min="0"
-                        max="100"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="target_demographics">Target Demographics</Label>
-                      <Input
-                        id="target_demographics"
-                        value={formData.target_demographics}
-                        onChange={(e) => setFormData({ ...formData, target_demographics: e.target.value })}
-                        placeholder="e.g., Urban youth, 18-35"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="target_geography">Target Geography</Label>
-                      <Input
-                        id="target_geography"
-                        value={formData.target_geography}
-                        onChange={(e) => setFormData({ ...formData, target_geography: e.target.value })}
-                        placeholder="e.g., Mumbai, Delhi"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="training_materials">Training Materials URL</Label>
-                      <Input
-                        id="training_materials"
-                        value={formData.training_materials}
-                        onChange={(e) => setFormData({ ...formData, training_materials: e.target.value })}
-                        placeholder="Enter training materials URL"
-                        type="url"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      variant="hero"
-                      className="w-full"
-                    >
-                      List Product
-                    </Button>
-                  </form>
+            
+            {/* Three Main Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
+              <Card className="hover:shadow-elegant transition-all duration-300 cursor-pointer" onClick={() => navigate("/list-product")}>
+                <CardContent className="p-6 text-center">
+                  <Plus className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">List Your Product</h3>
+                  <p className="text-muted-foreground">Create campaigns and reach thousands of sellers across India</p>
                 </CardContent>
               </Card>
-            </section>
-          )}
+              
+              <Card className="hover:shadow-elegant transition-all duration-300 cursor-pointer" onClick={() => navigate("/find-sellers")}>
+                <CardContent className="p-6 text-center">
+                  <Package className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Find Campaigns</h3>
+                  <p className="text-muted-foreground">Browse available products and apply to become a seller</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="hover:shadow-elegant transition-all duration-300 cursor-pointer" onClick={() => navigate("/match-onboard")}>
+                <CardContent className="p-6 text-center">
+                  <Users className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Match & Onboard</h3>
+                  <p className="text-muted-foreground">Review applications and onboard the best sellers</p>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
 
           {/* Products Grid */}
           <section className="py-8">
