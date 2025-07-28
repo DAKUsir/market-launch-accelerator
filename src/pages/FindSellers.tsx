@@ -91,7 +91,7 @@ export default function FindSellers() {
         .select("id")
         .eq("campaign_id", selectedCampaign.id)
         .eq("seller_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (existingApplication) {
         toast({

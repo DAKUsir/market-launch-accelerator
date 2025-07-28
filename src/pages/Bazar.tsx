@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Package, 
@@ -19,90 +19,63 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock product data
-const mockProducts = [
-  {
-    id: "1",
-    user_id: "startup1",
-    name: "Eco-Friendly Water Bottle",
-    description: "A sustainable, BPA-free water bottle for eco-conscious consumers.",
-    image_url: "https://via.placeholder.com/300x200?text=Water+Bottle",
-    commission_rate: 15,
-    target_demographics: "Urban youth, 18-35",
-    target_geography: "Mumbai, Delhi",
-    training_materials: "https://example.com/training.pdf"
-  },
-  {
-    id: "2",
-    user_id: "startup2",
-    name: "Organic Skincare Cream",
-    description: "Natural skincare cream made with organic ingredients.",
-    image_url: "https://via.placeholder.com/300x200?text=Skincare+Cream",
-    commission_rate: 20,
-    target_demographics: "Women, 25-45",
-    target_geography: "Bangalore, Chennai",
-    training_materials: "https://example.com/skincare-guide.pdf"
-  },
-  {
-    id: "3",
-    user_id: "startup1",
-    name: "Smart Fitness Tracker",
-    description: "Track your fitness goals with our advanced wearable device.",
-    image_url: "https://via.placeholder.com/300x200?text=Fitness+Tracker",
-    commission_rate: 18,
-    target_demographics: "Fitness enthusiasts, 20-40",
-    target_geography: "Nationwide",
-    training_materials: ""
-  }
-];
+interface Campaign {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  product_images: string[];
+  commission_rate: number;
+  commission_type: string;
+  target_regions: string[];
+  target_demographics: any;
+  sales_materials: any;
+  status: string;
+  profiles?: {
+    full_name: string;
+    company_name: string;
+  };
+}
 
 export default function Bazar() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    image_url: "",
-    commission_rate: "",
-    target_demographics: "",
-    target_geography: "",
-    training_materials: ""
-  });
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Handle form submission (mock)
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      navigate("/auth");
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  const fetchCampaigns = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select(`
+          *,
+          profiles(company_name, full_name)
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCampaigns(data || []);
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
       toast({
-        title: "Please Sign In",
-        description: "You need to sign in to list a product.",
+        title: "Error",
+        description: "Failed to load campaigns",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    toast({
-      title: "Success",
-      description: "Product listed successfully! (Prototype)",
-    });
-    setFormData({
-      name: "",
-      description: "",
-      image_url: "",
-      commission_rate: "",
-      target_demographics: "",
-      target_geography: "",
-      training_materials: ""
-    });
-    setShowForm(false);
   };
 
-  // Handle seller application (mock)
-  const handleApply = (productId: string) => {
+  const handleApply = async (campaignId: string) => {
     if (!user) {
       navigate("/auth");
       toast({
@@ -112,20 +85,37 @@ export default function Bazar() {
       });
       return;
     }
-    toast({
-      title: "Application Submitted",
-      description: `You applied to sell product ID ${productId}! (Prototype)`,
-    });
-    navigate("/dashboard", { state: { productId } });
+
+    try {
+      const { error } = await supabase
+        .from('seller_applications')
+        .insert([
+          {
+            campaign_id: campaignId,
+            seller_id: user.id,
+            status: 'pending'
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Application Submitted",
+        description: "Your application has been submitted successfully!",
+      });
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error('Error submitting application:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit application",
+        variant: "destructive"
+      });
+    }
   };
 
-  // Handle edit product (mock)
-  const handleEdit = (productId: string) => {
-    toast({
-      title: "Edit Initiated",
-      description: `Editing product ID ${productId}! (Prototype)`,
-    });
-    navigate("/dashboard", { state: { productId } });
+  const handleEdit = (campaignId: string) => {
+    navigate("/list-product", { state: { campaignId } });
   };
 
   return (
@@ -180,72 +170,83 @@ export default function Bazar() {
             <h2 className="text-3xl font-bold text-foreground mb-8 text-center">
               Explore Products
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockProducts.map((product) => (
-                <Card key={product.id} className="hover:shadow-elegant transition-all duration-300 animate-fade-in">
-                  <CardContent className="p-6">
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-lg mb-4"
-                    />
-                    <h3 className="text-xl font-semibold text-foreground">{product.name}</h3>
-                    <p className="text-muted-foreground mb-4 line-clamp-2">{product.description}</p>
-                    <div className="space-y-2 mb-4">
-                      <p className="text-sm flex items-center">
-                        <DollarSign className="h-4 w-4 mr-1 text-primary" />
-                        Commission: {product.commission_rate}%
-                      </p>
-                      <p className="text-sm flex items-center">
-                        <MapPin className="h-4 w-4 mr-1 text-primary" />
-                        {product.target_geography}
-                      </p>
-                      <p className="text-sm flex items-center">
-                        <Users className="h-4 w-4 mr-1 text-primary" />
-                        {product.target_demographics}
-                      </p>
-                      {product.training_materials && (
-                        <p className="text-sm flex items-center">
-                          <ImageIcon className="h-4 w-4 mr-1 text-primary" />
-                          <a href={product.training_materials} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                            Training Materials
-                          </a>
-                        </p>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Loading campaigns...</p>
+              </div>
+            ) : campaigns.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No active campaigns available.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {campaigns.map((campaign) => (
+                  <Card key={campaign.id} className="hover:shadow-elegant transition-all duration-300 animate-fade-in">
+                    <CardContent className="p-6">
+                      {campaign.product_images && campaign.product_images.length > 0 ? (
+                        <img
+                          src={campaign.product_images[0]}
+                          alt={campaign.title}
+                          className="w-full h-48 object-cover rounded-lg mb-4"
+                        />
+                      ) : (
+                        <div className="w-full h-48 bg-muted rounded-lg mb-4 flex items-center justify-center">
+                          <Package className="h-12 w-12 text-muted-foreground" />
+                        </div>
                       )}
-                    </div>
-                    {user && (
-                      <Button
-                        variant="hero"
-                        className="w-full mb-2"
-                        onClick={() => handleApply(product.id)}
-                      >
-                        <Send className="h-4 w-4 mr-2" />
-                        Apply to Sell
-                      </Button>
-                    )}
-                    {user && (
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => handleEdit(product.id)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Product
-                      </Button>
-                    )}
-                    {!user && (
-                      <Button
-                        variant="hero"
-                        className="w-full"
-                        onClick={() => navigate("/auth")}
-                      >
-                        Sign In to Apply
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <h3 className="text-xl font-semibold text-foreground">{campaign.title}</h3>
+                      <p className="text-muted-foreground mb-4 line-clamp-2">{campaign.description}</p>
+                      <div className="space-y-2 mb-4">
+                        <p className="text-sm flex items-center">
+                          <DollarSign className="h-4 w-4 mr-1 text-primary" />
+                          Commission: {campaign.commission_rate}% ({campaign.commission_type})
+                        </p>
+                        <p className="text-sm flex items-center">
+                          <MapPin className="h-4 w-4 mr-1 text-primary" />
+                          {campaign.target_regions?.join(', ') || 'All regions'}
+                        </p>
+                        <p className="text-sm flex items-center">
+                          <Users className="h-4 w-4 mr-1 text-primary" />
+                          {campaign.target_demographics?.age_groups?.join(', ') || 'All demographics'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          By: {campaign.profiles?.company_name || campaign.profiles?.full_name || 'Anonymous'}
+                        </p>
+                      </div>
+                      {user && user.id !== campaign.user_id && (
+                        <Button
+                          variant="hero"
+                          className="w-full mb-2"
+                          onClick={() => handleApply(campaign.id)}
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          Apply to Sell
+                        </Button>
+                      )}
+                      {user && user.id === campaign.user_id && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => handleEdit(campaign.id)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Campaign
+                        </Button>
+                      )}
+                      {!user && (
+                        <Button
+                          variant="hero"
+                          className="w-full"
+                          onClick={() => navigate("/auth")}
+                        >
+                          Sign In to Apply
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* Scale & Succeed CTA */}
