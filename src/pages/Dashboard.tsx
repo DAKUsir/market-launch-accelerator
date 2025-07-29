@@ -185,7 +185,11 @@ export default function Dashboard() {
                 <Bell className="h-4 w-4 mr-2" />
                 Notifications
               </Button>
-              <Button variant="hero" size="sm">
+              <Button 
+                variant="hero" 
+                size="sm"
+                onClick={() => navigate(isStartup ? '/list-product' : '/find-sellers')}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 {isStartup ? 'New Campaign' : 'Browse Products'}
               </Button>
@@ -321,32 +325,32 @@ export default function Dashboard() {
                 <CardContent className="space-y-3">
                   {isStartup ? (
                     <>
-                      <Button variant="hero" className="w-full justify-start">
+                      <Button variant="hero" className="w-full justify-start" onClick={() => navigate('/list-product')}>
                         <Plus className="h-4 w-4 mr-2" />
                         Create Campaign
                       </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/match-onboard')}>
                         <Users className="h-4 w-4 mr-2" />
                         Manage Sellers
                       </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/bazar')}>
                         <BarChart3 className="h-4 w-4 mr-2" />
-                        View Analytics
+                        View Marketplace
                       </Button>
                     </>
                   ) : (
                     <>
-                      <Button variant="hero" className="w-full justify-start">
+                      <Button variant="hero" className="w-full justify-start" onClick={() => navigate('/find-sellers')}>
                         <Plus className="h-4 w-4 mr-2" />
                         Browse Products
                       </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/dashboard')}>
                         <DollarSign className="h-4 w-4 mr-2" />
                         View Earnings
                       </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/bazar')}>
                         <BarChart3 className="h-4 w-4 mr-2" />
-                        Sales Report
+                        Visit Marketplace
                       </Button>
                     </>
                   )}

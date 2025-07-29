@@ -8,7 +8,10 @@ import {
   MapPin, 
   Users, 
   Send,
-  Edit
+  Edit,
+  Search,
+  Filter,
+  Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,7 +47,10 @@ export default function Bazar() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
 
   useEffect(() => {
     fetchCampaigns();
@@ -63,6 +69,7 @@ export default function Bazar() {
 
       if (error) throw error;
       setCampaigns(data || []);
+      setFilteredCampaigns(data || []);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
       toast({
@@ -118,6 +125,41 @@ export default function Bazar() {
     navigate("/list-product", { state: { campaignId } });
   };
 
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    filterCampaigns(term, selectedRegion);
+  };
+
+  const handleRegionFilter = (region: string) => {
+    setSelectedRegion(region);
+    filterCampaigns(searchTerm, region);
+  };
+
+  const filterCampaigns = (search: string, region: string) => {
+    let filtered = campaigns;
+    
+    if (search) {
+      filtered = filtered.filter(campaign => 
+        campaign.title.toLowerCase().includes(search.toLowerCase()) ||
+        campaign.description.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    
+    if (region) {
+      filtered = filtered.filter(campaign => 
+        campaign.target_regions?.includes(region)
+      );
+    }
+    
+    setFilteredCampaigns(filtered);
+  };
+
+  const allRegions = [...new Set(campaigns.flatMap(c => c.target_regions || []))];
+
+  useEffect(() => {
+    filterCampaigns(searchTerm, selectedRegion);
+  }, [campaigns]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -165,22 +207,61 @@ export default function Bazar() {
           </section>
 
 
-          {/* Products Grid */}
+          {/* Search and Filter */}
           <section className="py-8">
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search campaigns..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={selectedRegion}
+                  onChange={(e) => handleRegionFilter(e.target.value)}
+                  className="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">All Regions</option>
+                  {allRegions.map(region => (
+                    <option key={region} value={region}>{region}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
             <h2 className="text-3xl font-bold text-foreground mb-8 text-center">
-              Explore Products
+              Explore Products {searchTerm && `for "${searchTerm}"`}
             </h2>
             {loading ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">Loading campaigns...</p>
               </div>
-            ) : campaigns.length === 0 ? (
+            ) : filteredCampaigns.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">No active campaigns available.</p>
+                <p className="text-muted-foreground">
+                  {campaigns.length === 0 ? "No active campaigns available." : "No campaigns match your search criteria."}
+                </p>
+                {campaigns.length > 0 && (
+                  <button 
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedRegion("");
+                      setFilteredCampaigns(campaigns);
+                    }}
+                    className="text-primary hover:underline mt-2"
+                  >
+                    Clear filters
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {campaigns.map((campaign) => (
+                {filteredCampaigns.map((campaign) => (
                   <Card key={campaign.id} className="hover:shadow-elegant transition-all duration-300 animate-fade-in">
                     <CardContent className="p-6">
                       {campaign.product_images && campaign.product_images.length > 0 ? (
@@ -194,7 +275,13 @@ export default function Bazar() {
                           <Package className="h-12 w-12 text-muted-foreground" />
                         </div>
                       )}
-                      <h3 className="text-xl font-semibold text-foreground">{campaign.title}</h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-xl font-semibold text-foreground">{campaign.title}</h3>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                          <span className="text-sm text-muted-foreground">New</span>
+                        </div>
+                      </div>
                       <p className="text-muted-foreground mb-4 line-clamp-2">{campaign.description}</p>
                       <div className="space-y-2 mb-4">
                         <p className="text-sm flex items-center">

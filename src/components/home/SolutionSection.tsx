@@ -13,9 +13,9 @@ export function SolutionSection() {
     },
     {
       icon: Users,
-      title: "Ready Network",
-      description: "Tap into 10,000+ pre-verified sellers across 500+ cities and towns.",
-      benefit: "500+ cities"
+      title: "Growing Network",
+      description: "Join our expanding network of verified sellers across India.",
+      benefit: "Growing daily"
     },
     {
       icon: Target,
@@ -106,9 +106,9 @@ export function SolutionSection() {
             
             {/* Floating Stats */}
             <div className="absolute top-4 left-4 bg-card border border-border rounded-lg p-3 shadow-lg animate-pulse-glow">
-              <div className="text-xs font-semibold text-foreground">Active Now</div>
-              <div className="text-lg font-bold text-primary">2,847</div>
-              <div className="text-xs text-muted-foreground">Sellers online</div>
+              <div className="text-xs font-semibold text-foreground">Marketplace</div>
+              <div className="text-lg font-bold text-primary">Active</div>
+              <div className="text-xs text-muted-foreground">Join now</div>
             </div>
           </div>
         </div>

@@ -31,16 +31,16 @@ export function HeroSection() {
             {/* Stats */}
             <div className="flex flex-wrap gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">10,000+</div>
+                <div className="text-3xl font-bold text-primary">1+</div>
                 <div className="text-sm text-muted-foreground">Active Sellers</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-secondary">500+</div>
-                <div className="text-sm text-muted-foreground">Cities Covered</div>
+                <div className="text-3xl font-bold text-secondary">2+</div>
+                <div className="text-sm text-muted-foreground">Products Listed</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent">95%</div>
-                <div className="text-sm text-muted-foreground">Success Rate</div>
+                <div className="text-3xl font-bold text-accent">100%</div>
+                <div className="text-sm text-muted-foreground">Platform Uptime</div>
               </div>
             </div>
 
@@ -69,7 +69,7 @@ export function HeroSection() {
                 ))}
               </div>
               <div className="text-sm text-muted-foreground">
-                Trusted by <span className="font-semibold text-foreground">2,500+</span> startups
+                Growing marketplace for <span className="font-semibold text-foreground">startups & sellers</span>
               </div>
             </div>
           </div>
@@ -87,15 +87,15 @@ export function HeroSection() {
             
             {/* Floating Elements */}
             <div className="absolute -top-4 -right-4 bg-card border border-border rounded-lg p-4 shadow-lg animate-pulse-glow">
-              <div className="text-sm font-semibold text-foreground">Live Sales</div>
-              <div className="text-2xl font-bold text-primary">₹2.4L</div>
-              <div className="text-xs text-muted-foreground">Today</div>
+              <div className="text-sm font-semibold text-foreground">Platform Ready</div>
+              <div className="text-2xl font-bold text-primary">Live</div>
+              <div className="text-xs text-muted-foreground">Marketplace</div>
             </div>
             
             <div className="absolute -bottom-4 -left-4 bg-card border border-border rounded-lg p-4 shadow-lg animate-pulse-glow">
-              <div className="text-sm font-semibold text-foreground">New Partnerships</div>
-              <div className="text-2xl font-bold text-secondary">+127</div>
-              <div className="text-xs text-muted-foreground">This week</div>
+              <div className="text-sm font-semibold text-foreground">Active Campaigns</div>
+              <div className="text-2xl font-bold text-secondary">2</div>
+              <div className="text-xs text-muted-foreground">Running now</div>
             </div>
           </div>
         </div>
