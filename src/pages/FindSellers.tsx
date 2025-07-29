@@ -135,7 +135,7 @@ export default function FindSellers() {
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          campaign.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRegion = !selectedRegion || 
+    const matchesRegion = !selectedRegion || selectedRegion === "all" || 
                          (campaign.target_regions && campaign.target_regions.includes(selectedRegion));
     return matchesSearch && matchesRegion;
   });
@@ -201,7 +201,7 @@ export default function FindSellers() {
                     <SelectValue placeholder="Filter by region" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Regions</SelectItem>
+                    <SelectItem value="all">All Regions</SelectItem>
                     {allRegions.map((region) => (
                       <SelectItem key={region} value={region}>
                         {region}
